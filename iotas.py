@@ -65,6 +65,26 @@ def server_static(filepath):
 
 
 # And here begin the IoTAS RESTful interfaces
+@app.get('/iotas')
+def do_iotas_info():
+
+	#for thingy in request.headers:
+	#	print thingy, request.headers[thingy]
+
+	# Getting the internal IP address is kind of easy.  Kind of.
+	hostname = socket.gethostname()
+	#internal_ip = socket.gethostbyname(hostname)
+	external_ip = request.headers['Host']
+	# import urllib, re, string
+	# url = urllib.URLopener()
+	# resp = url.open('http://checkip.dyndns.org')
+	# html = resp.read()
+	# end = html.find("</body>")
+	# start = html.find("Address:") + 9
+	# external_ip = html[start:end].strip() 
+	resp = { "version": "0.1a", "apis": [], "host_name": hostname, "ip": external_ip }
+	return json.dumps(resp)
+
 @app.get('/devices')
 def do_devices():
 	try:
