@@ -31,19 +31,48 @@ class CDBusApiFactory(object):
 
 class CDBusDriver(object):
 	def __init__(self, group_address, session_bus=False):
+		"""
+		:param group_address: Default group address to control on the CBus.  Used by :meth:`on` and :meth:`off`.
+		:type group_address: int
+		
+		:param session_bus: In development mode, cdbusd uses the Session Bus instead of the System Bus.  When set to True, this uses the Session Bus instead of the System Bus.
+		:type session_bus: bool
+		
+		"""
 		self.group_address = group_address
 		self._api = API_FACTORY.create_api(session_bus)
 
 
 	def on(self):
-		self._api.lighting_group_on(self.group_address)
+		self._api.lighting_group_on([self.group_address])
 
 
 	def off(self):
-		self._api.lighting_group_off(self.group_address)
-	
+		self._api.lighting_group_off([self.group_address])
+
+
 	def value(self):
-		self._api.get_light_states(self.group_address)[0]
+		return self.get_led_value(self.group_address)
+		
+	
+	def set_led_value(self, group_address, triplet):
+		# we don't actually care what is in the triplet, we just implement it
+		# "like" the holiday by taking the highest value in the triplet as our
+		# level.
+		
+		# level values are 0..255, convert to float
+		level = max(triplet) / 255.
+		
+		assert 0. <= level <= 1., 'Light level must be 0..255.'
+		
+		# 0 == duration of fade.  run instantly.
+		self._api.lighting_group_ramp(group_address, 0, level)
+
+
+	def get_led_value(self, group_address):
+		return int(self._api.get_light_states([group_address])[0] * 255.)
+		
+		
 
 
 API_FACTORY = CDBusApiFactory()

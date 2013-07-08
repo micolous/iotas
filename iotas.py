@@ -138,6 +138,7 @@ def do_setlights():
 	resp = setlights.setlights(app.licht, dj)
 	return json.dumps(resp)	
 
+
 @app.put('/device/light/setvalues')
 def do_setvalues():
 	d = request.body.read()
@@ -249,8 +250,12 @@ if __name__ == '__main__':
 	#
 	ourname = "%s.local" % socket.gethostname()
 	import devices.moorescloud.holiday.driver
+	import devices.cdbusd.driver
 	#app.licht = devices.holiday.driver.Holiday(ourname)
-	app.licht = devices.moorescloud.holiday.driver.Holiday('sim')			# Connect to the simulator
+	#app.licht = devices.moorescloud.holiday.driver.Holiday('sim')			# Connect to the simulator
+	
+	# Connect to cdbusd network attached in dev mode (session bus)
+	app.licht = devices.cdbusd.driver.CDBusDriver(group_address=1, session_bus=True)
 
 	#the_srv = 'wsgiref'  
 	the_srv = 'cherrypy'
@@ -261,6 +266,7 @@ if __name__ == '__main__':
 	try:
 		app.run(host='0.0.0.0', port=80, debug=False, server=the_srv)
 	except:
+		print "Application died, trying on another port..."
 		try:
 			app.run(host='0.0.0.0', port=8080, debug=False, server=the_srv)
 		except:
